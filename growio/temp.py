@@ -40,7 +40,8 @@ class Therm():
             crc = results[0].strip()[-3:]
             if crc == "YES":
                 success_reads += 1
-                temp = int(results[1].strip()[-5:])
+                
+                temp = int(results[1][results[1].rfind('=')+1:].strip())
                 readings.append(temp)
                 if success_reads == 5:
                     success = True
