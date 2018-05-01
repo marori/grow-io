@@ -40,10 +40,10 @@ class LiteIO(object):
     def __init__(self, pin):
         """
         Initiate IO for given pin
-        :param pin:n
+        :param pin: board pin number
         """
-        if not pin in self._pin2bcm.keys():
-            raise UnavailablePin("Pin %s is not available for I/O"%(pin))
+        if pin not in self._pin2bcm.keys():
+            raise UnavailablePin("Pin %s is not available for I/O" % pin)
         self.pin = pin
         self.bcm = self._pin2bcm[pin]
         gpio.init()

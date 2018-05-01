@@ -1,8 +1,9 @@
 import time
 from liteio import *
 
+
 class DHT22Result:
-    'DHT22 sensor result returned by DHT22.read() method'
+    """DHT22 sensor result returned by DHT22.read() method"""
 
     ERR_NO_ERROR = 0
     ERR_MISSING_DATA = 1
@@ -20,15 +21,15 @@ class DHT22Result:
     def is_valid(self):
         return self.error_code == DHT22Result.ERR_NO_ERROR
 
+
 class DHT22(object):
-    'DHT22 sensor reader class for Raspberry'
+    """DHT22 sensor reader class for Raspberry"""
 
     __pin = 0
 
     def __init__(self, pin):
         self._lio = LiteIO(pin)
         self.__pin = pin
-
 
     def read(self):
         # send initial high
@@ -60,9 +61,8 @@ class DHT22(object):
 
         # ok, we have valid data, return it
         return DHT22Result(DHT22Result.ERR_NO_ERROR,
-                           (((the_bytes[2] & 0x7F)<<8)+the_bytes[3])/10.00,
-                           ((the_bytes[0]<<8)+the_bytes[1])/10.00)
-
+                           (((the_bytes[2] & 0x7F) << 8)+the_bytes[3])/10.00,
+                           ((the_bytes[0] << 8)+the_bytes[1])/10.00)
 
     def __send_and_sleep(self, output, sleep):
         self._lio.write(output)
@@ -90,64 +90,66 @@ class DHT22(object):
 
         return data
 
-    def __parse_data_pull_up_lengths(self, data):
-        STATE_INIT_PULL_DOWN = 1
-        STATE_INIT_PULL_UP = 2
-        STATE_DATA_FIRST_PULL_DOWN = 3
-        STATE_DATA_PULL_UP = 4
-        STATE_DATA_PULL_DOWN = 5
+    @staticmethod
+    def __parse_data_pull_up_lengths(data):
+        init_pull_down = 1
+        init_pull_up = 2
+        data_first_pull_down = 3
+        data_pull_up = 4
+        data_pull_down = 5
 
-        state = STATE_INIT_PULL_DOWN
+        state = init_pull_down
 
-        lengths = [] # will contain the lengths of data pull up periods
-        current_length = 0 # will contain the length of the previous period
+        lengths = []  # will contain the lengths of data pull up periods
+        current_length = 0  # will contain the length of the previous period
 
         for i in range(len(data)):
 
             current = data[i]
             current_length += 1
 
-            if state == STATE_INIT_PULL_DOWN:
+            if state == init_pull_down:
                 if current == gpio.LOW:
                     # ok, we got the initial pull down
-                    state = STATE_INIT_PULL_UP
+                    state = init_pull_up
                     continue
                 else:
                     continue
-            if state == STATE_INIT_PULL_UP:
+            if state == init_pull_up:
                 if current == gpio.HIGH:
                     # ok, we got the initial pull up
-                    state = STATE_DATA_FIRST_PULL_DOWN
+                    state = data_first_pull_down
                     continue
                 else:
                     continue
-            if state == STATE_DATA_FIRST_PULL_DOWN:
+            if state == data_first_pull_down:
                 if current == gpio.LOW:
                     # we have the initial pull down, the next will be the data pull up
-                    state = STATE_DATA_PULL_UP
+                    state = data_pull_up
                     continue
                 else:
                     continue
-            if state == STATE_DATA_PULL_UP:
+            if state == data_pull_up:
                 if current == gpio.HIGH:
                     # data pulled up, the length of this pull up will determine whether it is 0 or 1
                     current_length = 0
-                    state = STATE_DATA_PULL_DOWN
+                    state = data_pull_down
                     continue
                 else:
                     continue
-            if state == STATE_DATA_PULL_DOWN:
+            if state == data_pull_down:
                 if current == gpio.LOW:
                     # pulled down, we store the length of the previous pull up period
                     lengths.append(current_length)
-                    state = STATE_DATA_PULL_UP
+                    state = data_pull_up
                     continue
                 else:
                     continue
 
         return lengths
 
-    def __calculate_bits(self, pull_up_lengths):
+    @staticmethod
+    def __calculate_bits(pull_up_lengths):
         # find shortest and longest period
         shortest_pull_up = 1000
         longest_pull_up = 0
@@ -171,21 +173,23 @@ class DHT22(object):
 
         return bits
 
-    def __bits_to_bytes(self, bits):
+    @staticmethod
+    def __bits_to_bytes(bits):
         the_bytes = []
         byte = 0
 
         for i in range(0, len(bits)):
             byte = byte << 1
-            if (bits[i]):
+            if bits[i]:
                 byte = byte | 1
             else:
                 byte = byte | 0
-            if ((i + 1) % 8 == 0):
+            if (i + 1) % 8 == 0:
                 the_bytes.append(byte)
                 byte = 0
 
         return the_bytes
 
-    def __calculate_checksum(self, the_bytes):
+    @staticmethod
+    def __calculate_checksum(the_bytes):
         return the_bytes[0] + the_bytes[1] + the_bytes[2] + the_bytes[3] & 255
