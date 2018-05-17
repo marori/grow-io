@@ -31,9 +31,8 @@ class DAC8591(object):
         if port < 0 or port > 3:
             raise BadPort("Port must be between 0 and 3")
         bus = SMBus(self.bus)
-        bus.write_byte(self.address, port)
+        bus.write_byte(self.address, 0x40 + port)
         bus.read_byte(self.address)
-        sleep(2)
         return bus.read_byte(self.address)
 
     def write(self, value):
