@@ -1,7 +1,7 @@
 import argparse
 import os
 import sys
-
+from subprocess import call
 
 class ThermException(Exception):
     pass
@@ -20,11 +20,19 @@ class Therm(object):
     
     @staticmethod
     def list_devices():
+        Therm.load_modules()
         master_slaves = open("%s/w1_master_slaves" % Therm.w1_master_path, 'r')
         slaves = map(str.strip, master_slaves.readlines())
         return slaves
+
+    @staticmethod
+    def load_modules():
+        if not os.path.isdir("self.w1_master_path"):
+            modules = ["w1_therm", "w1-gpio", "w1_sunxi"]
+            map(lambda module: call(["modprobe", module]), modules)
     
     def __init__(self, device_id):
+        Therm.load_modules()
         if not os.path.isdir("%s/%s" % (self.w1_master_path, device_id)):
             raise DeviceNotFound("Device %s not found" % device_id)
         self.device_id = device_id
