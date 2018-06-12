@@ -35,7 +35,7 @@ class EcMeter(object):
    Ra is found empirically to be best at ~500ohm
    The Plug goes into the water, knowing Vo we can calculate Rw (Resistance of Water)
     """
-    temperature_compensation = 0.019
+    temperature_compensation = 0.019 # typical temp compensation for hydroponic solutions
     calibration = 0.2
 
     def __init__(self, s1, s2, adc, adc_port, temp, calibration=None):
@@ -91,17 +91,22 @@ class EcMeter(object):
         )
         return ec25
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Read the EC of water.")
     parser.add_argument("S1", metavar="S1", type=int, help="Input source board pin 1")
     parser.add_argument("S2", metavar="S2", type=int, help="Input source board pin 2")
     parser.add_argument("bus", metavar="I2CBUS", type=int, help="I2C bus - use i2cdetect")
-    parser.add_argument("addr", metavar="I2CADDRESS", type=str, help="I2C ADC address")
+    parser.add_argument("addr", metavar="I2CADDRESS", type=str, help="I2C ADC address - use i2cdetect")
     parser.add_argument("port", metavar="PORT", type=int, help="Analog port")
     parser.add_argument("device_id", metavar="DEVICE_ID", type=str, help="Temperature sensor device ID")
 
     args = parser.parse_args()
+
+    # parse Source Pins
+
+    # parse Bus
+    
+    # parse address
     try:
         address = int(args.addr)
     except ValueError:
@@ -110,3 +115,8 @@ if __name__ == "__main__":
         except ValueError:
             print("The address must be an integer.")
             sys.exit(1)
+
+    # parse adc port (between 1 and 4)
+
+    # parse temperature device ID
+    
