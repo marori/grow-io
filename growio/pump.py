@@ -1,7 +1,7 @@
 import argparse
 from relay import *
 
-class Pump(Relay):
+class Pump(object):
     """This class is to be used with a water pump connected to a Relay
     it's used to turn on a pump for a given amount of time
     """
@@ -14,7 +14,7 @@ class Pump(Relay):
         :param seconds:
         :return:
         """
-        self.on_during(seconds)
+        self.relay.on_during(seconds)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Sets a pump on for a given number of seconds")
@@ -26,4 +26,3 @@ if __name__ == "__main__":
 
     pump = Pump(args.pin)
     pump.pump_for(args.seconds)
-    
