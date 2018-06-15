@@ -1,8 +1,8 @@
 import argparse
 import sys
 from dac import DAC8591
-from temp import Therm
-from liteio import LiteIO
+from temp import *
+from liteio import *
 
 
 class EcMeterException(Exception):
@@ -30,13 +30,16 @@ class EcMeter(object):
              Ri            |       |     |
    S2 _____/\/\/\__________|   Rw  |_____|
 
-   Where S1 and S2 are GPIO Outputs, to be used as 3.3V alternating input source (S2 = !S1)
+   Where:
+   S1 and S2 are GPIO Outputs, to be used as 3.3V alternating input source (S2 = !S1)
+      First measure with S1=3.3 and S2=0 and take a second measure with S1=0 and S2=3.3
+      This is done to minimize ion deposits on the probe.
    Ri are the internal OrangePi resistor, which we can't change.
    Ra is found empirically to be best at ~500ohm
    The Plug goes into the water, knowing Vo we can calculate Rw (Resistance of Water)
     """
     temperature_compensation = 0.019 # typical temp compensation for hydroponic solutions
-    calibration = 0.2
+    calibration = 0.2  # default calibration
 
     def __init__(self, s1, s2, adc, adc_port, temp, calibration=None):
         """Initiates an EC meter
@@ -102,11 +105,18 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # parse Source Pins
+    try:
+        s1 = LiteIO(args.S1)
+        s2 = LiteIO(args.S2)
+    except UnavailablePin:
+        print("Source pins must be valid I/O pins")
+        sys.exit(1)
 
-    # parse Bus
-    
-    # parse address
+    try:
+        bus = int(args.bus)
+    except ValueError:
+        print("Bus must be an integer value")
+
     try:
         address = int(args.addr)
     except ValueError:
@@ -116,7 +126,22 @@ if __name__ == "__main__":
             print("The address must be an integer.")
             sys.exit(1)
 
-    # parse adc port (between 1 and 4)
+    adc = DAC8591(bus, address)
 
-    # parse temperature device ID
-    
+    try:
+        port = int(args.port)
+        if 0 < port > 3:
+            print("ADC port must be between 0 and 3")
+            sys.exit(1)
+    except ValueError:
+        print("Port must be an integer")
+        sys.exit(1)
+
+    try:
+        therm = Therm(args.device_id)
+    except DeviceNotFound as e:
+        print(e.message)
+        sys.exit(1)
+
+    ec = EcMeter(s1, s2, adc, port, therm)
+    print(ec.read())

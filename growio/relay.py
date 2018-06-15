@@ -1,6 +1,6 @@
 import argparse
 from liteio import LiteIO
-
+import time
 
 class RelayException(Exception):
     pass
@@ -13,7 +13,7 @@ class BadType(RelayException):
 class Relay(object):
     """This class controls a Relay on the OrangePi-Lite Board
 
-    Default relay state control is active low. Always use a pullup resistor
+    Default relay state control is active low. Always use a pullup resistor!
     """
     def __init__(self, pin, active_low=True):
         self.lio = LiteIO(pin)
@@ -34,12 +34,21 @@ class Relay(object):
         self.lio.write(v)
         self.state = on
 
+    def on_during(self, seconds):
+        """Sets state on for a given amount of seconds, turning off after they pass
+
+        :param seconds:
+        :return:
+        """
+        self.set_state(True)
+        time.sleep(seconds)
+        self.set_state(False)
+
     def get_state(self):
         """Gets current relay state
         :return: current state
         """
         return self.state
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Sets relay on/off on a given pin")
