@@ -29,7 +29,8 @@ class Therm(object):
     def load_modules():
         if not os.path.isdir("self.w1_master_path"):
             modules = ["w1_therm", "w1-gpio", "w1_sunxi"]
-            map(lambda module: call(["modprobe", module]), modules)
+            for module in modules:
+                call(["modprobe", module])
     
     def __init__(self, device_id):
         Therm.load_modules()
@@ -72,19 +73,19 @@ if __name__ == "__main__":
     parser.add_argument("device_id", nargs='?', metavar="DEVICE_ID", type=str, default=None,
                         help="The device ID can be found at /sys/devices/w1_bus_master")
 
-    def p(s):
-        print(s)
 
     args = parser.parse_args()
     if args.l:
-        map(p, Therm.list_devices())
+        for device in Therm.list_devices():
+            print(device)
         sys.exit(0)
 
     if args.a:
         devices = Therm.list_devices()
         therms = [Therm(device) for device in devices]
         temps = ["%s -- %s" % (therm.device_id, therm.read()) for therm in therms]
-        map(p, temps)
+        for temp in temps:
+            print(temp)
         sys.exit(0)
 
     if args.device_id is None:
