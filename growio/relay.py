@@ -11,9 +11,23 @@ class BadType(RelayException):
 
 
 class Relay(object):
-    """This class controls a Relay on the OrangePi-Lite Board
-
-    Default relay state control is active low. Always use a pullup resistor!
+    """This class controls a Relay on the OrangePi-Lite Board with the following circuitry
+                                  .
+                                 /|\ Vcc
+                                  |
+                               | /
+                       R       |V_
+    LiteIO(Pin) O----/\/\/\----|    T
+                               |\
+                               | \
+    Where:                        |--------O
+      R = 1k                   |__|__
+      T = PNP BC 307B             A  |
+      D = 3.3v Zener         D   / \          Relay contacts
+        3.3v Relay              /___\
+                                  |--------O
+                                 _|_
+                                 /// Gnd
     """
     def __init__(self, pin, active_low=True):
         self.lio = LiteIO(pin)

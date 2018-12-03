@@ -1,4 +1,6 @@
 import argparse
+from datetime import datetime
+
 from relay import *
 
 class Pump(object):
@@ -25,4 +27,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     pump = Pump(args.pin)
+    print("Pumping and dumping water at pump %s for %s minutes at %s" % (args.pin, args.seconds / 60, datetime.now()))
     pump.pump_for(args.seconds)
